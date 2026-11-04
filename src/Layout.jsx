@@ -1,18 +1,29 @@
 import { NavLink, Outlet } from 'react-router'
 import { useAuth } from './context/AuthContext.jsx'
+import { useLocalStorage } from './hooks/useLocalStorage.js'
 import { useCartStore } from './store/cartStore.js'
 
 export default function Layout() {
   const { user, dispatch } = useAuth()
+  const [theme, setTheme] = useLocalStorage('campus-shop-theme', 'light')
+  const darkMode = theme === 'dark'
   const cartCount = useCartStore(state => state.items.reduce((count, item) => count + item.quantity, 0))
 
   return (
-    <div className="site">
+    <div className={darkMode ? 'site dark' : 'site'}>
       <header className="site-header">
         <nav className="container navigation" aria-label="Main navigation">
           <NavLink to="/" end>Home</NavLink>
           <NavLink to="/products">Products</NavLink>
           <NavLink to="/cart">Cart ({cartCount})</NavLink>
+
+          <button
+            type="button"
+            aria-pressed={darkMode}
+            onClick={() => setTheme(darkMode ? 'light' : 'dark')}
+          >
+            Dark mode
+          </button>
 
           <div className="account-links">
             {user ? (
