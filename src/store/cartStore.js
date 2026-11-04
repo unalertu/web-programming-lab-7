@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 const cartKey = 'campus-shop-cart'
 
+// Start with an empty cart if the saved data cannot be read.
 function readItems() {
   try {
     const savedItems = JSON.parse(localStorage.getItem(cartKey) ?? '[]')
@@ -64,6 +65,7 @@ export const useCartStore = create((set, get) => ({
   },
 }))
 
+// Save the cart only when the items change.
 useCartStore.subscribe((state, previous) => {
   if (state.items === previous.items) {
     return

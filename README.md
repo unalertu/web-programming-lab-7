@@ -1,67 +1,70 @@
 # Campus Shop
 
-A small React shop for Web Programming Assignment 7. The catalogue uses the DummyJSON products API.
+This is a small React shop for Web Programming Assignment 7. It gets its products from DummyJSON.
 
-## Run locally
+## How to run it
 
 ```sh
 npm ci
 npm run dev
 ```
 
-The project was checked with Node.js 24. Open the address printed by Vite. Use `npm run lint` for the source check and `npm run build` to build the app.
+Open the link shown in the terminal. I checked the project with Node.js 24. Use `npm run lint` to check the code and `npm run build` to build the app.
 
-The demo username is `240408016@st.biruni.edu.tr` and the demo password is `demo123456`. You can add products as a guest and sign in when you open the cart.
+- Demo username `240408016@st.biruni.edu.tr`
+- Demo password `demo123456`
 
-## File organization
+You can add products before signing in. The cart asks you to sign in when you open it.
 
-- `src/main.jsx` sets up the router and auth provider. `src/App.jsx` declares the routes and `src/Layout.jsx` contains the navigation, footer, and theme toggle.
-- `src/pages/` contains the home, product list, product detail, login, cart, and 404 pages.
-- `src/components/` contains the product card and the protected route.
-- `src/api/` contains the DummyJSON requests and the simulated login.
-- `src/hooks/` contains the fetch and local storage hooks.
-- `src/context/AuthContext.jsx` keeps the signed-in user, and `src/store/cartStore.js` holds cart items and actions.
-- `src/index.css` contains the shared styles and light and dark colors.
+## Files
+
+- `src/main.jsx` starts the app. `src/App.jsx` sets up the routes.
+- `src/Layout.jsx` has the menu, footer, and theme button.
+- `src/pages/` has the pages. `src/components/` has the product card and the cart route guard.
+- `src/api/` gets products and handles the demo login.
+- `src/hooks/` has the fetch and local storage hooks.
+- `src/context/AuthContext.jsx` keeps track of the signed-in user. `src/store/cartStore.js` manages the cart.
+- `src/index.css` has the styles.
 
 ## Reasoning questions
 
-### State choices
+### Where does the state live?
 
-- **Signed-in user.** The current user lives in the auth Context and changes through a reducer. The navbar, login, and cart route all need access to it during the same app session. Reloading starts a new signed-out session.
-- **Cart.** Cart items live in a Zustand store and are saved to local storage. The detail page can select just the add action, while the navbar reads the quantity total and the cart page reads the items.
-- **Filters.** The search text and category live in the URL query string. A copied or reloaded URL opens the same filtered catalogue.
-- **Product list.** The API response lives in the reducer state of the list page's `useFetch` call. The page calculates the visible products during render from that response and the current filters.
-- **Theme.** The layout owns the theme with `useLocalStorage`. Since every route uses that layout, they share one theme and the saved preference is restored on reload.
+- **Signed-in user.** The user is in Context with a reducer. The login page, menu, and cart guard all need to know who is signed in.
+- **Cart.** The cart is in Zustand because several pages use it and the items change often. The browser also saves the items so they are there after a refresh.
+- **Filters.** The search text and category are in the URL. When I share or refresh the link, the same filters are used.
+- **Product list.** The list page gets its products from `useFetch` and keeps them in the hook's reducer. The page filters the products when it renders.
+- **Theme.** The theme lives in the layout and is saved with `useLocalStorage`. All pages use the layout, so the theme stays the same when I move between pages.
 
-### Context versus store
+### Why use Context and Zustand?
 
-Login and logout are occasional changes, so a Context provider is enough for the few components that read the signed-in user. A cart Context containing the whole cart would notify its consumers on every quantity change, including components that only need an action or an unchanged badge value. Zustand selectors let those components subscribe to just what they use, while moving the user to Zustand would add a store for a value that changes infrequently.
+The user only changes when someone signs in or out, so Context is enough. With a single cart Context, components that only use the add button would also get updates when the cart changes. With Zustand, the button can read just the add action and the menu can read just the count. Using Zustand for the user would add another store for a value that changes rarely.
 
-### Custom hooks
+### What does useFetch share?
 
-`useFetch` shares the pattern for loading data, keeping the result or error in a reducer, and cancelling requests in the effect cleanup. The list and detail pages each get their own state and run their own request.
+Both product pages use the same code for loading, showing an error, and stopping an old request. Each page has its own data and loading state.
 
-### Route parameters
+### What type is the product ID?
 
-`useParams` gives me the product ID as a string, such as `"3"`. The detail page passes it to the API function, which encodes it as part of the request URL. The cart uses the numeric ID from the product response when it checks whether an item is already in the cart.
+The ID from `useParams` is a string, like `"3"`. I use it in the API URL, so it can stay a string. In the cart I use the number that comes back in the product data.
 
-### Protected routes
+### Is the protected route secure?
 
-`ProtectedRoute` is a client-side convenience and does not provide security. The browser runs this code, and anyone can read the bundled demo credentials or change the client state. A real shop would need a backend to verify credentials, issue a session, and check authorization for each protected request.
+The route guard sends signed-out users to the login page. It is not real security because the demo login and the user state are both in the browser. A real shop needs a server to check the password and check if the user can access each private request.
 
-### Deep links
+### What happens if I refresh /products/3?
 
-If a basic static server receives `/products/3` on a refresh, it looks for a file at that path and can return a 404. Vite's default SPA development setup sends `index.html`, so React Router can match the URL after the app loads. A static deployment needs a fallback to `index.html` for app routes. [Vite shared options](https://vite.dev/config/shared-options.html#apptype), [React Router SPA fallback](https://reactrouter.com/how-to/pre-rendering#with-a-spa-fallback)
+A basic static server looks for a file at `/products/3` and may return a 404. Vite sends `index.html` for this route, so React Router can open the right page. A static host needs the same fallback rule. [Vite docs](https://vite.dev/config/shared-options.html#apptype), [React Router docs](https://reactrouter.com/how-to/pre-rendering#with-a-spa-fallback)
 
-## Self-study notes
+## What I looked up
 
-- **Updating query parameters.** `setSearchParams` can receive the current parameters. I make a copy, set or delete just the changed key, then return the copy so other parameters stay in the link. [React Router useSearchParams](https://reactrouter.com/api/hooks/useSearchParams)
-- **Saving the cart safely.** Local storage holds strings, so I parse the saved JSON and check that it is an array with valid item values. If reading or parsing fails, the store starts empty. The Zustand subscription writes to storage when the items array changes. [MDN localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage), [MDN JSON.parse](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse), [Zustand create and subscribe](https://zustand.docs.pmnd.rs/reference/apis/create)
-- **Light and dark theme.** I set the surface, text, link, and border colors as CSS custom properties on the layout. The dark class overrides those properties, and the rest of the CSS keeps using the same variable names. [MDN CSS custom properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascading_variables/Using_custom_properties)
-- **Cancelling requests.** The fetch effect creates an `AbortController` per request and calls `abort()` during cleanup. The hook checks the signal before updating its reducer so an old request cannot overwrite the current result. [React useEffect](https://react.dev/reference/react/useEffect), [MDN Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
+- **URL filters.** I copy the current search parameters before I change one. This lets me change the category and keep the search text. [React Router docs](https://reactrouter.com/api/hooks/useSearchParams)
+- **Saving the cart.** I read the saved items from local storage and check the data. If there is no usable data, the cart starts empty. Zustand's `subscribe` saves the items when they change. [MDN localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage), [MDN JSON.parse](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse), [Zustand docs](https://zustand.docs.pmnd.rs/reference/apis/create)
+- **Theme.** I put the colors in CSS variables. The dark class changes those colors. [MDN CSS variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascading_variables/Using_custom_properties)
+- **Stopping a request.** I give each request an `AbortController`. The effect stops the old request when the product ID changes or the page closes. [React useEffect](https://react.dev/reference/react/useEffect), [MDN Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
 
-## Challenges
+## What was tricky?
 
-A new array of fetch inputs on each render would restart the effect even if the product ID stayed the same. The detail page uses `useMemo` to keep the input list stable until the ID changes. [React useMemo](https://react.dev/reference/react/useMemo)
+I needed to make sure the detail page did not fetch again when the ID stayed the same. I used `useMemo` to keep the same input list until the ID changes. [React useMemo](https://react.dev/reference/react/useMemo)
 
-The cart redirect needed to keep the original URL, including its query string, until login finished. I passed it in router state and used replacement navigation so the browser Back button skips the login screen after a successful sign-in. [React Router useNavigate](https://reactrouter.com/api/hooks/useNavigate)
+I also needed to remember the cart link before sending the user to login. I saved the link in router state and used `replace` so the Back button skips the login page after signing in. [React Router useNavigate](https://reactrouter.com/api/hooks/useNavigate)

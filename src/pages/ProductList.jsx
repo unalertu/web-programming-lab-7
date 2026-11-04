@@ -21,6 +21,7 @@ export default function ProductList() {
 
   function updateFilter(name, value) {
     setSearchParams(current => {
+      // Copy the URL filters so only this filter changes.
       const next = new URLSearchParams(current)
       if (value === '') {
         next.delete(name)

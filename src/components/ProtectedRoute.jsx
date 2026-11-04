@@ -9,6 +9,7 @@ export default function ProtectedRoute() {
     return <Outlet />
   }
 
+  // Keep the full address so login can send the user back.
   const from = location.pathname + location.search + location.hash
   return <Navigate to="/login" state={{ from }} replace />
 }

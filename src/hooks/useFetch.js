@@ -36,9 +36,11 @@ export function useFetch(fetchData, inputs = noInputs) {
     }
 
     load()
+    // Stop the old request when the inputs change or the page closes.
     return () => controller.abort()
   }, [fetchData, inputs])
 
+  // Show loading while the new request is running.
   if (state.fetchData !== fetchData || state.inputs !== inputs) {
     return initialState
   }
