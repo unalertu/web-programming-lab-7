@@ -1,5 +1,7 @@
 import { Route, Routes } from 'react-router'
 import Layout from './Layout.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
+import Cart from './pages/Cart.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
 import NotFound from './pages/NotFound.jsx'
@@ -14,6 +16,9 @@ export default function App() {
         <Route path="products">
           <Route index element={<ProductList />} />
           <Route path=":id" element={<ProductDetail />} />
+        </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="cart" element={<Cart />} />
         </Route>
         <Route path="login" element={<Login />} />
         <Route path="*" element={<NotFound />} />

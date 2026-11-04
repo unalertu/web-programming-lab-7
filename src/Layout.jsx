@@ -1,8 +1,10 @@
 import { NavLink, Outlet } from 'react-router'
 import { useAuth } from './context/AuthContext.jsx'
+import { useCartStore } from './store/cartStore.js'
 
 export default function Layout() {
   const { user, dispatch } = useAuth()
+  const cartCount = useCartStore(state => state.items.reduce((count, item) => count + item.quantity, 0))
 
   return (
     <div className="site">
@@ -10,6 +12,7 @@ export default function Layout() {
         <nav className="container navigation" aria-label="Main navigation">
           <NavLink to="/" end>Home</NavLink>
           <NavLink to="/products">Products</NavLink>
+          <NavLink to="/cart">Cart ({cartCount})</NavLink>
 
           <div className="account-links">
             {user ? (
