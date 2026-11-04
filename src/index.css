@@ -106,3 +106,31 @@ a {
   padding: 0.4rem 0.5rem;
   max-width: 100%;
 }
+
+.product-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) 1fr;
+  align-items: start;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.product-detail img {
+  width: 100%;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.product-detail h1 {
+  margin-top: 0;
+}
+
+@media (max-width: 36rem) {
+  .product-detail {
+    grid-template-columns: 1fr;
+  }
+
+  .product-detail img {
+    max-width: 15rem;
+  }
+}

@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router'
+import { useLocation, useSearchParams } from 'react-router'
 import { fetchProducts } from '../api/productsApi.js'
 import ProductCard from '../components/ProductCard.jsx'
 import { useFetch } from '../hooks/useFetch.js'
@@ -6,6 +6,7 @@ import { useFetch } from '../hooks/useFetch.js'
 export default function ProductList() {
   const { loading, error, data } = useFetch(fetchProducts)
   const [searchParams, setSearchParams] = useSearchParams()
+  const { search: listSearch } = useLocation()
   const search = searchParams.get('q') ?? ''
   const category = searchParams.get('category') ?? ''
   const products = data ?? []
@@ -60,7 +61,9 @@ export default function ProductList() {
             <p>No products match your filters.</p>
           ) : (
             <div className="product-grid">
-              {visibleProducts.map(product => <ProductCard key={product.id} product={product} />)}
+              {visibleProducts.map(product => (
+                <ProductCard key={product.id} product={product} listSearch={listSearch} />
+              ))}
             </div>
           )}
         </>
